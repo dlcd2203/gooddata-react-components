@@ -30,11 +30,13 @@ import "../../../../styles/scss/geoChart.scss";
 import { handlePushpinMouseEnter, handlePushpinMouseLeave } from "./geoChartTooltip";
 import { getViewportOptions } from "../../../helpers/geoChart/viewport";
 import { isClusteringAllowed } from "../../../helpers/geoChart/common";
+import { IColorStrategy } from "../../visualizations/chart/colorFactory";
 
 export interface IGeoChartRendererProps {
     config: IGeoConfig;
     execution: Execution.IExecutionResponses;
     geoData: IGeoData;
+    colorStrategy: IColorStrategy;
     afterRender(): void;
     onCenterPositionChanged(center: IGeoLngLat): void;
     onZoomChanged(zoom: number): void;
@@ -227,7 +229,7 @@ export default class GeoChartRenderer extends React.Component<IGeoChartRendererP
 
     private setupMap = (): void => {
         const { chart, handleLayerLoaded, props } = this;
-        const { config, geoData } = props;
+        const { config, geoData, colorStrategy } = props;
         const { points: { groupNearbyPoints = true } = {} } = config || {};
 
         // hide city, town, village and hamlet labels
@@ -235,7 +237,7 @@ export default class GeoChartRenderer extends React.Component<IGeoChartRendererP
             chart.removeLayer("settlement-label");
         }
 
-        chart.addSource(DEFAULT_DATA_SOURCE_NAME, createPushpinDataSource(geoData, config));
+        chart.addSource(DEFAULT_DATA_SOURCE_NAME, createPushpinDataSource(geoData, colorStrategy, config));
 
         if (!isClusteringAllowed(geoData, groupNearbyPoints)) {
             chart.addLayer(

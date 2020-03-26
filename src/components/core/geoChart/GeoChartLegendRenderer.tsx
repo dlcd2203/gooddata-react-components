@@ -14,10 +14,12 @@ import PushpinCategoryLegend from "../geoChart/legends/PushpinCategoryLegend";
 
 import { useNumbericSymbols } from "../base/hook/TranslationsHook";
 import { generateLegendColorData } from "./geoChartColor";
+import { IColorStrategy } from "../../visualizations/chart/colorFactory";
 
 export interface IGeoChartLegendRendererProps {
     config: IGeoConfig;
     geoData: IGeoData;
+    colorStrategy: IColorStrategy;
     position?: string;
     categoryItems?: IPushpinCategoryLegendItem[];
     onItemClick?(item: IPushpinCategoryLegendItem): void;
@@ -25,7 +27,7 @@ export interface IGeoChartLegendRendererProps {
 
 export default function GeoChartLegendRenderer(props: IGeoChartLegendRendererProps): JSX.Element {
     const numericSymbols = useNumbericSymbols();
-    const { position = TOP, categoryItems, geoData } = props;
+    const { position = TOP, categoryItems, geoData, colorStrategy } = props;
     const { size, color } = geoData;
 
     const hasSizeData = Boolean(size && size.data.length);
@@ -41,7 +43,7 @@ export default function GeoChartLegendRenderer(props: IGeoChartLegendRendererPro
 
     return (
         <div className={classes}>
-            {isColorLegendVisible && renderPushpinColorLegend(color, numericSymbols)}
+            {isColorLegendVisible && renderPushpinColorLegend(color, numericSymbols, colorStrategy)}
             {hasSegmentData && renderPushpinCategoryLegend(props)}
             {hasSizeData && renderPushpinSizeLegend(size, numericSymbols)}
         </div>
@@ -55,10 +57,14 @@ function renderPushpinSizeLegend(size: IGeoMeasureItem, numericSymbols: string[]
     );
 }
 
-function renderPushpinColorLegend(color: IGeoMeasureItem, numericSymbols: string[]): JSX.Element {
+function renderPushpinColorLegend(
+    color: IGeoMeasureItem,
+    numericSymbols: string[],
+    colorStrategy: IColorStrategy,
+): JSX.Element {
     const { data, format } = color;
     const dataWithoutNull = data.filter(isFinite);
-    const colorData = generateLegendColorData(dataWithoutNull);
+    const colorData = generateLegendColorData(dataWithoutNull, colorStrategy.getColorByIndex(0));
     return <ColorLegend data={colorData} format={format} numericSymbols={numericSymbols} position={TOP} />;
 }
 

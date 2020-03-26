@@ -374,7 +374,7 @@ const getBaseProjectSchema = (title, identifier) => {
                 {
                     identifier: '30',
                     title: 'City',
-                    elements: ['New York', 'Chicago', 'San Antonio', 'San Diego', 'Austin', 'Fort Worth', 'Charlotte']
+                    elements: ['44.500000;-89.500000', '39.000000;-80.500000', '31.000000;-100.000000', '44.500000;-100.000000', '41.700001;-71.500000', '44.000000;-120.500000', '43.000000;-75.000000']
                 },
                 {
                     identifier: '23',

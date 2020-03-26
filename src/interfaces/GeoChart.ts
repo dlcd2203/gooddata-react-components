@@ -2,6 +2,7 @@
 import { ISeparators } from "@gooddata/numberjs";
 import { VisualizationInput, VisualizationObject } from "@gooddata/typings";
 import { ICommonChartProps } from "../components/core/base/BaseChart";
+import { IColorPalette, IColorMapping } from "./Config";
 
 export interface IGeoLngLat {
     lat: number;
@@ -93,6 +94,9 @@ export interface IGeoConfig {
     separators?: ISeparators;
     viewport?: IGeoConfigViewport;
     points?: IGeoPointsConfig;
+    colors?: string[];
+    colorPalette?: IColorPalette;
+    colorMapping?: IColorMapping[];
 }
 
 export interface IGeoPushpinChartProps extends ICommonChartProps {

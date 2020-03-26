@@ -1,9 +1,9 @@
 // (C) 2019-2020 GoodData Corporation
 import * as React from "react";
+import { AFM } from "@gooddata/typings";
 import { WrappedComponentProps } from "react-intl";
 import * as invariant from "invariant";
 import get = require("lodash/get");
-import uniq = require("lodash/uniq");
 import isEqual = require("lodash/isEqual");
 import { ICommonChartProps } from "./base/BaseChart";
 import { BaseVisualization } from "./base/BaseVisualization";
@@ -25,10 +25,18 @@ import {
     IValidationResult,
     IGeoLngLat,
 } from "../../interfaces/GeoChart";
-import { DEFAULT_COLORS } from "../visualizations/utils/color";
+import { getValidColorPalette } from "../visualizations/utils/color";
 import { isDataOfReasonableSize } from "../../helpers/geoChart/common";
 import { getGeoData, getGeoBucketsFromMdObject } from "../../helpers/geoChart/data";
 import { TOP, BOTTOM } from "../visualizations/chart/legend/PositionTypes";
+
+import { IColorStrategy } from "../visualizations/chart/colorFactory";
+import { IUnwrappedAttributeHeaderWithItems } from "../visualizations/chart/chartOptionsBuilder";
+import { findAttributeInDimension } from "../../helpers/executionResultHelper";
+import AttributeColorStrategy from "../visualizations/chart/colorStrategies/attribute";
+import MeasureGeoChartColorStrategy from "../visualizations/chart/colorStrategies/measureGeoChart";
+import { IColorAssignment, IColorPalette } from "../../interfaces/Config";
+import { isMappingHeaderAttributeItem } from "../../interfaces/MappingHeader";
 
 export function renderChart(props: IGeoChartRendererProps): React.ReactElement {
     return <GeoChartRenderer {...props} />;
@@ -58,6 +66,7 @@ export interface IGeoChartInnerState {
 export interface IGeoChartInnerOptions {
     geoData: IGeoData;
     categoryItems: IPushpinCategoryLegendItem[];
+    colorStrategy: IColorStrategy;
 }
 /**
  * Geo Chart react component
@@ -94,7 +103,6 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
         } = this.props;
         const buckets = getGeoBucketsFromMdObject(mdObject);
         const geoData: IGeoData = getGeoData(buckets, execution);
-
         const { isDataTooLarge } = this.validateData(geoData);
         if (isDataTooLarge) {
             invariant(onDataTooLarge, "GeoChart's onDataTooLarge callback is missing.");
@@ -164,17 +172,17 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
         this.setState({ enabledLegendItems });
     };
 
-    private getCategoryLegendItems(data: string[]): IPushpinCategoryLegendItem[] {
-        const segmentItemsUniq: string[] = uniq(data);
-        const defaultColorsNumber = DEFAULT_COLORS.length;
-
-        return segmentItemsUniq.map(
-            (item: string, legendIndex: number): IPushpinCategoryLegendItem => {
-                const name: string = item || EMPTY_SEGMENT_ITEM;
-                const color: string = DEFAULT_COLORS[legendIndex % defaultColorsNumber];
+    private getCategoryLegendItems(colorStrategy: IColorStrategy): IPushpinCategoryLegendItem[] {
+        const colorAssignment: IColorAssignment[] = colorStrategy.getColorAssignment();
+        return colorAssignment.map(
+            (item: IColorAssignment, index: number): IPushpinCategoryLegendItem => {
+                const name: string = isMappingHeaderAttributeItem(item.headerItem)
+                    ? item.headerItem.attributeHeaderItem.name
+                    : EMPTY_SEGMENT_ITEM;
+                const color: string = colorStrategy.getColorByIndex(index);
                 return {
                     name,
-                    legendIndex,
+                    legendIndex: index,
                     color,
                     isVisible: true,
                 };
@@ -184,15 +192,63 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
 
     private setGeoChartInnerOptions(geoData: IGeoData) {
         const { segment } = geoData;
+
         let categoryItems: IPushpinCategoryLegendItem[] = [];
+        const colorStrategy: IColorStrategy = this.getColorStrategy(geoData);
         if (segment) {
-            categoryItems = this.getCategoryLegendItems(segment.data);
+            categoryItems = this.getCategoryLegendItems(colorStrategy);
         }
 
         this.geoChartOptions = {
             geoData,
             categoryItems,
+            colorStrategy,
         };
+    }
+
+    private getColorStrategy(geoData: IGeoData): IColorStrategy {
+        const {
+            config: { colors, colorPalette, colorMapping },
+            execution: {
+                executionResponse,
+                executionResult: { headerItems },
+            },
+            dataSource,
+        } = this.props;
+        const { size, color, segment } = geoData;
+        const palette: IColorPalette = getValidColorPalette(colors, colorPalette);
+        // const customColors: string[] = [];
+        const afm: AFM.IAfm = dataSource.getAfm();
+        const dimensions = executionResponse.dimensions;
+
+        if (segment && segment.data.length) {
+            const attributeDimension = dimensions[segment.index];
+            const segmentByAttribute: IUnwrappedAttributeHeaderWithItems = findAttributeInDimension(
+                attributeDimension,
+                headerItems[segment.index],
+                segment.index,
+            );
+            return new AttributeColorStrategy(
+                palette,
+                colorMapping,
+                null, // viewByAttribute
+                segmentByAttribute,
+                executionResponse,
+                afm,
+            );
+        }
+        if (color || size) {
+            return new MeasureGeoChartColorStrategy(
+                palette,
+                colorMapping,
+                null, // viewByAttribute
+                null, // viewByStackBy
+                executionResponse,
+                afm,
+                null,
+                geoData,
+            );
+        }
     }
 
     private getLegendProps(): IGeoChartLegendRendererProps {
@@ -204,10 +260,11 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
                 config,
                 position,
                 geoData: {},
+                colorStrategy: null,
             };
         }
 
-        const { geoData } = geoChartOptions;
+        const { geoData, colorStrategy } = geoChartOptions;
         const { segment } = geoData;
         const { enabledLegendItems } = this.state;
 
@@ -216,12 +273,13 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
                 config,
                 position,
                 geoData,
+                colorStrategy,
                 categoryItems: enabledLegendItems,
                 onItemClick: this.onLegendItemClick,
             };
         }
 
-        return { config, position, geoData };
+        return { config, position, geoData, colorStrategy };
     }
 
     private getChartProps(): IGeoChartRendererProps {
@@ -236,10 +294,11 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
                 geoData: {},
                 onCenterPositionChanged,
                 onZoomChanged,
+                colorStrategy: null,
             };
         }
 
-        const { geoData } = geoChartOptions;
+        const { geoData, colorStrategy } = geoChartOptions;
         const segmentIndex: number = get(geoChartOptions, "geoData.segment.index");
 
         const chartProps: IGeoChartRendererProps = {
@@ -249,6 +308,7 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
             geoData,
             onCenterPositionChanged,
             onZoomChanged,
+            colorStrategy,
         };
 
         if (segmentIndex) {
