@@ -17,7 +17,7 @@ import {
     MEASURE_COLOR_GEOCHART_ALIAS,
 } from "../data/geoChartComponentProps";
 import { CUSTOM_COLOR_PALETTE_CONFIG } from "../data/configProps";
-import { attributeItemNameMatch, uriMatch } from "../../src/factory/HeaderPredicateFactory";
+import { attributeItemNameMatch, uriMatch, identifierMatch } from "../../src/factory/HeaderPredicateFactory";
 
 const wrapperStyle: React.CSSProperties = { width: 900, height: 600, position: "relative" };
 
@@ -347,22 +347,19 @@ storiesOf("Core components/GeoPushpinChart", module)
             }),
         ),
     )
-    .add("with custom colors, color mapping for Measure (Color or Size) ", () =>
+    .add("with color mapping for Location", () =>
         screenshotWrap(
             renderGeoPushpinChart({
                 projectId: "storybook",
                 location: ATTRIBUTE_LOCATION_GEOCHART,
-                size: MEASURE_SIZE_GEOCHART,
-                color: MEASURE_COLOR_GEOCHART,
                 config: {
                     ...DEFAULT_CONFIG,
-                    ...CUSTOM_COLOR_PALETTE_CONFIG,
                     colorMapping: [
                         {
-                            predicate: uriMatch("/gdc/md/storybook/obj/21"),
+                            predicate: identifierMatch("30.df"),
                             color: {
                                 type: "guid",
-                                value: "03",
+                                value: "05",
                             },
                         },
                     ],

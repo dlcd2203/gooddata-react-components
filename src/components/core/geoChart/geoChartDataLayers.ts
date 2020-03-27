@@ -157,7 +157,7 @@ export function createUnclusterPoints(dataSourceName: string): mapboxgl.Layer {
         filter: ["!", DEFAULT_CLUSTER_FILTER],
         paint: {
             ...DEFAULT_PUSHPIN_OPTIONS,
-            [PUSHPIN_STYLE_CIRCLE_COLOR]: DEFAULT_PUSHPIN_COLOR_VALUE,
+            [PUSHPIN_STYLE_CIRCLE_COLOR]: createPushpinColorOptions(),
             [PUSHPIN_STYLE_CIRCLE_STROKE_COLOR]: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
             [PUSHPIN_STYLE_CIRCLE_SIZE]: PUSHPIN_SIZE_OPTIONS_MAP.min.default / 2,
         },

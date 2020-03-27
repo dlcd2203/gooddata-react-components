@@ -5,7 +5,6 @@ import { TypeGuards } from "@gooddata/gooddata-js";
 import { IColorAssignment, IColorMapping, IColorPalette } from "../../../interfaces/Config";
 import { getColorByGuid, getRgbStringFromRGB } from "../utils/color";
 import { IColorStrategy, ICreateColorAssignmentReturnValue } from "./colorFactory";
-import { IGeoData } from "../../../interfaces/GeoChart";
 
 abstract class ColorStrategy implements IColorStrategy {
     protected palette: string[];
@@ -20,7 +19,6 @@ abstract class ColorStrategy implements IColorStrategy {
         executionResponse: Execution.IExecutionResponse,
         afm: AFM.IAfm,
         occupiedMeasureBucketsLocalIdentifiers?: string[],
-        geoData?: IGeoData,
     ) {
         const { fullColorAssignment, outputColorAssignment } = this.createColorAssignment(
             colorPalette,
@@ -30,7 +28,6 @@ abstract class ColorStrategy implements IColorStrategy {
             executionResponse,
             afm,
             occupiedMeasureBucketsLocalIdentifiers,
-            geoData,
         );
         this.fullColorAssignment = fullColorAssignment;
         this.outputColorAssignment = outputColorAssignment ? outputColorAssignment : fullColorAssignment;
@@ -77,7 +74,6 @@ abstract class ColorStrategy implements IColorStrategy {
         executionResponse: Execution.IExecutionResponse,
         afm: AFM.IAfm,
         occupiedMeasureBucketsLocalIdentifiers?: string[],
-        geoData?: IGeoData,
     ): ICreateColorAssignmentReturnValue;
 }
 

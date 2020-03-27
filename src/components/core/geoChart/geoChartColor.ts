@@ -6,7 +6,6 @@ import { getColorPalette } from "../../visualizations/utils/color";
 import {
     DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
     DEFAULT_PUSHPIN_COLOR_SCALE,
-    DEFAULT_PUSHPIN_COLOR_VALUE,
     EMPTY_SEGMENT_ITEM,
 } from "../../../constants/geoChart";
 import { IObjectMapping, IPushpinColor } from "../../../interfaces/GeoChart";
@@ -14,7 +13,7 @@ import { IColorLegendItem } from "../../visualizations/typings/legend";
 import { getMinMax } from "../../../helpers/utils";
 import { IColorStrategy } from "../../visualizations/chart/colorFactory";
 import { IColorAssignment } from "../../../interfaces/Config";
-import { isMappingHeaderAttributeItem, isMappingHeaderMeasureItem } from "../../../interfaces/MappingHeader";
+import { isMappingHeaderAttributeItem, isMappingHeaderAttribute } from "../../../interfaces/MappingHeader";
 
 const DEFAULT_SEGMENT_ITEM = "default_segment_item";
 const DEFAULT_COLOR_INDEX_IN_PALETTE = DEFAULT_PUSHPIN_COLOR_SCALE - 1;
@@ -40,21 +39,20 @@ export function getColorIndexInPalette(value: number, min: number, max: number):
 
 export function getColorPaletteMapping(colorStrategy: IColorStrategy): IObjectMapping {
     const colorAssignment: IColorAssignment[] = colorStrategy.getColorAssignment();
-
     return colorAssignment.reduce(
         (result: IObjectMapping, item: IColorAssignment, index: number): IObjectMapping => {
             const color = colorStrategy.getColorByIndex(index);
             const colorPalette = getColorPalette(color);
-            // color follow by Measure
-            if (isMappingHeaderMeasureItem(item.headerItem)) {
+            // color follow Location
+            if (isMappingHeaderAttribute(item.headerItem)) {
                 return {
                     [DEFAULT_SEGMENT_ITEM]: colorPalette,
                 };
             }
-            // color folow by SegmentBy
+            // color folow SegmentBy
             const name: string = isMappingHeaderAttributeItem(item.headerItem)
                 ? item.headerItem.attributeHeaderItem.name
-                : "";
+                : DEFAULT_SEGMENT_ITEM;
             return {
                 ...result,
                 [name]: colorPalette,
@@ -79,8 +77,14 @@ export function getPushpinColors(
     segmentValues: string[] = [],
     colorStrategy: IColorStrategy,
 ): IPushpinColor[] {
+    const DEFAULT_COLOR = colorStrategy.getColorByIndex(0);
     if (!colorValues.length && !segmentValues.length) {
-        return [];
+        return [
+            {
+                border: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
+                background: DEFAULT_COLOR,
+            },
+        ];
     }
     const segmentNames: string[] = segmentValues.map((value: string): string => value || EMPTY_SEGMENT_ITEM);
     const colorPaletteMapping: IObjectMapping = getColorPaletteMapping(colorStrategy);
@@ -104,7 +108,7 @@ export function getPushpinColors(
         return [
             {
                 border: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
-                background: DEFAULT_PUSHPIN_COLOR_VALUE,
+                background: DEFAULT_COLOR,
             },
         ];
     }
