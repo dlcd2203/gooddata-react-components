@@ -88,34 +88,71 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
     }
 
     public componentDidUpdate(prevProps: IGeoChartInnerProps) {
-        if (!this.shouldGeoChartUpdate(prevProps)) {
+        const isColorMappingChanged = this.isColorMappingChanged(prevProps);
+        const isExcutionChanged = this.shouldGeoChartUpdate(prevProps);
+
+        if (!isExcutionChanged && !isColorMappingChanged) {
             return;
         }
 
         const {
-            config: { mdObject },
+            config: { mdObject, colorMapping, colors, colorPalette },
             execution,
             onDataTooLarge,
+            dataSource,
+            // pushData, // TODO
         } = this.props;
         const buckets = getGeoBucketsFromMdObject(mdObject);
-        const geoData: IGeoData = getGeoData(buckets, execution);
-        const { isDataTooLarge } = this.validateData(geoData);
-        if (isDataTooLarge) {
-            invariant(onDataTooLarge, "GeoChart's onDataTooLarge callback is missing.");
-            return onDataTooLarge();
-        }
 
-        this.setGeoChartInnerOptions(geoData);
+        if (isExcutionChanged) {
+            const geoData = getGeoData(buckets, execution);
+            const { isDataTooLarge } = this.validateData(geoData);
+            if (isDataTooLarge) {
+                invariant(onDataTooLarge, "GeoChart's onDataTooLarge callback is missing.");
+                return onDataTooLarge();
+            }
+            this.setGeoChartInnerOptions(geoData);
 
-        const {
-            categoryItems,
-            geoData: { segment },
-        } = this.geoChartOptions;
+            const {
+                categoryItems,
+                geoData: { segment },
+            } = this.geoChartOptions;
+            if (segment) {
+                this.setState({
+                    enabledLegendItems: [...categoryItems],
+                });
+            }
+        } else if (isColorMappingChanged) {
+            // TODO: ======
+            const { geoData } = this.geoChartOptions;
+            const { pushData } = this.props;
+            const { segment } = geoData;
+            const palette: IColorPalette = getValidColorPalette(colors, colorPalette);
+            const colorStrategy: IColorStrategy = getColorStrategy(
+                palette,
+                colorMapping,
+                geoData,
+                execution,
+                dataSource.getAfm(),
+            );
 
-        if (segment) {
+            let categoryItems: IPushpinCategoryLegendItem[] = [];
+            if (segment) {
+                categoryItems = this.getCategoryLegendItems(colorStrategy);
+            }
+
+            pushData({
+                colors: {
+                    colorAssignments: colorStrategy.getColorAssignment(),
+                    colorPalette: palette,
+                },
+            });
+
+            // if (segment) {
             this.setState({
                 enabledLegendItems: [...categoryItems],
             });
+            // }
         }
     }
 
@@ -158,6 +195,22 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
         return !isEqual(prevExecutionResponse, executionResponse);
     };
 
+    private isColorMappingChanged = (prevProps: IGeoChartInnerProps): boolean => {
+        const {
+            config: { colors, colorPalette, colorMapping },
+        } = this.props;
+
+        const {
+            config: { colors: prevColors, colorPalette: prevColorPalette, colorMapping: prevColorMapping },
+        } = prevProps;
+
+        return !(
+            isEqual(colors, prevColors) &&
+            isEqual(colorPalette, prevColorPalette) &&
+            isEqual(colorMapping, prevColorMapping)
+        );
+    };
+
     private onLegendItemClick = (item: IPushpinCategoryLegendItem): void => {
         const enabledLegendItems: IPushpinCategoryLegendItem[] = this.state.enabledLegendItems.map(
             (legendItem: IPushpinCategoryLegendItem, index: number): IPushpinCategoryLegendItem => {
@@ -194,6 +247,7 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
             config: { colors, colorPalette, colorMapping },
             dataSource,
             execution,
+            pushData,
         } = this.props;
 
         const palette: IColorPalette = getValidColorPalette(colors, colorPalette);
@@ -209,6 +263,13 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
         if (segment) {
             categoryItems = this.getCategoryLegendItems(colorStrategy);
         }
+
+        pushData({
+            colors: {
+                colorAssignments: [...colorStrategy.getColorAssignment()],
+                colorPalette: [...palette],
+            },
+        });
 
         this.geoChartOptions = {
             geoData,

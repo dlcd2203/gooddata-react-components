@@ -24,6 +24,7 @@ import {
 } from "../../utils/mdObjectHelper";
 import PushpinSizeControl from "../configurationControls/PushpinSizeControl";
 import PushpinViewportControl from "../configurationControls/PushpinViewportControl";
+import ColorsSection from "../configurationControls/colors/ColorsSection";
 
 export default class GeoPushpinConfigurationPanel extends ConfigurationPanelContent {
     public componentDidMount() {
@@ -111,6 +112,7 @@ export default class GeoPushpinConfigurationPanel extends ConfigurationPanelCont
         return (
             <BubbleHoverTrigger showDelay={SHOW_DELAY_DEFAULT} hideDelay={HIDE_DELAY_DEFAULT}>
                 <div>
+                    {this.renderColorSection()}
                     {this.renderViewportSection()}
                     {this.renderPointsSection()}
                 </div>
@@ -122,6 +124,34 @@ export default class GeoPushpinConfigurationPanel extends ConfigurationPanelCont
                     <FormattedMessage id="properties.config.not_applicable" />
                 </Bubble>
             </BubbleHoverTrigger>
+        );
+    }
+
+    protected renderColorSection() {
+        const {
+            properties,
+            propertiesMeta,
+            pushData,
+            colors,
+            featureFlags,
+            references,
+            isLoading,
+        } = this.props;
+
+        const controlsDisabled = this.isControlDisabled();
+
+        return (
+            <ColorsSection
+                properties={properties}
+                propertiesMeta={propertiesMeta}
+                references={references}
+                colors={colors}
+                controlsDisabled={controlsDisabled}
+                pushData={pushData}
+                hasMeasures={true} // force check Measures is exists
+                showCustomPicker={featureFlags.enableCustomColorPicker as boolean}
+                isLoading={isLoading}
+            />
         );
     }
 }
