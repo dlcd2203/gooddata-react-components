@@ -8,6 +8,7 @@ import { GeoChartInner, IGeoChartInnerProps } from "../GeoChart";
 import { createIntlMock } from "../../visualizations/utils/intlUtils";
 import * as BucketNames from "../../../constants/bucketNames";
 import { getExecutionResponse, getExecutionResult, getGeoConfig } from "../../../../stories/data/geoChart";
+import { locationSizeColorSegmentFiltersDataSource } from "../../tests/mocks";
 
 const intl = createIntlMock();
 const mdObject: VisualizationObject.IVisualizationObjectContent = {
@@ -114,6 +115,7 @@ describe("GeoChart", () => {
                 executionResponse: getExecutionResponse(true, true, false, true),
                 executionResult: getExecutionResult(true, true, false, true),
             },
+            dataSource: locationSizeColorSegmentFiltersDataSource,
         };
         const expectedState = [
             {
@@ -126,6 +128,18 @@ describe("GeoChart", () => {
                 name: "Toy Store",
                 legendIndex: 1,
                 color: "rgb(0,193,141)",
+                isVisible: true,
+            },
+            {
+                name: "Speciality",
+                legendIndex: 2,
+                color: "rgb(229,77,66)",
+                isVisible: true,
+            },
+            {
+                name: "Convenience",
+                legendIndex: 3,
+                color: "rgb(241,134,0)",
                 isVisible: true,
             },
         ];

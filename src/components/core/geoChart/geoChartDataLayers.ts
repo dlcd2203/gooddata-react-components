@@ -10,7 +10,6 @@ import {
     DEFAULT_CLUSTER_POINT_SIZES,
     DEFAULT_LAYER_NAME,
     DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
-    DEFAULT_PUSHPIN_COLOR_VALUE,
     DEFAULT_PUSHPIN_OPTIONS,
     PUSHPIN_STYLE_CIRCLE,
     PUSHPIN_STYLE_CIRCLE_COLOR,
@@ -84,8 +83,8 @@ export function createPushpinFilter(selectedSegmentItems: string[]): mapboxgl.Ex
     ]; // true/false are the output values, from the https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#match
 }
 
-function createPushpinColorOptions(): mapboxgl.Expression {
-    return ["string", ["get", "background", ["object", ["get", "color"]]], DEFAULT_PUSHPIN_COLOR_VALUE];
+function createPushpinColorOptions(defaultColor: string): mapboxgl.Expression {
+    return ["string", ["get", "background", ["object", ["get", "color"]]], defaultColor];
 }
 
 function createPushpinBorderOptions(): mapboxgl.Expression {
@@ -96,6 +95,7 @@ export function createPushpinDataLayer(
     dataSourceName: string,
     geoData: IGeoData,
     config: IGeoConfig,
+    defaultColor: string,
 ): mapboxgl.Layer {
     const { selectedSegmentItems = [], points: geoPointsConfig = {} } = config || {};
     const layer: mapboxgl.Layer = {
@@ -104,7 +104,7 @@ export function createPushpinDataLayer(
         source: dataSourceName,
         paint: {
             ...DEFAULT_PUSHPIN_OPTIONS,
-            [PUSHPIN_STYLE_CIRCLE_COLOR]: createPushpinColorOptions(),
+            [PUSHPIN_STYLE_CIRCLE_COLOR]: createPushpinColorOptions(defaultColor),
             [PUSHPIN_STYLE_CIRCLE_STROKE_COLOR]: createPushpinBorderOptions(),
             [PUSHPIN_STYLE_CIRCLE_SIZE]: createPushpinSizeOptions(geoData, geoPointsConfig),
         },
@@ -149,7 +149,7 @@ export function createClusterLabels(dataSourceName: string): mapboxgl.Layer {
  * @param dataSourceName
  * @param selectedSegmentItems
  */
-export function createUnclusterPoints(dataSourceName: string): mapboxgl.Layer {
+export function createUnclusterPoints(dataSourceName: string, defaultColor: string): mapboxgl.Layer {
     return {
         id: DEFAULT_LAYER_NAME,
         type: PUSHPIN_STYLE_CIRCLE,
@@ -157,7 +157,7 @@ export function createUnclusterPoints(dataSourceName: string): mapboxgl.Layer {
         filter: ["!", DEFAULT_CLUSTER_FILTER],
         paint: {
             ...DEFAULT_PUSHPIN_OPTIONS,
-            [PUSHPIN_STYLE_CIRCLE_COLOR]: createPushpinColorOptions(),
+            [PUSHPIN_STYLE_CIRCLE_COLOR]: createPushpinColorOptions(defaultColor),
             [PUSHPIN_STYLE_CIRCLE_STROKE_COLOR]: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
             [PUSHPIN_STYLE_CIRCLE_SIZE]: PUSHPIN_SIZE_OPTIONS_MAP.min.default / 2,
         },

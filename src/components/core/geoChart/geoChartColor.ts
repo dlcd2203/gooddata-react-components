@@ -43,13 +43,13 @@ export function getColorPaletteMapping(colorStrategy: IColorStrategy): IObjectMa
         (result: IObjectMapping, item: IColorAssignment, index: number): IObjectMapping => {
             const color = colorStrategy.getColorByIndex(index);
             const colorPalette = getColorPalette(color);
-            // color follow Location
+            // color base on Location
             if (isMappingHeaderAttribute(item.headerItem)) {
                 return {
                     [DEFAULT_SEGMENT_ITEM]: colorPalette,
                 };
             }
-            // color folow SegmentBy
+            // color base on SegmentBy
             const name: string = isMappingHeaderAttributeItem(item.headerItem)
                 ? item.headerItem.attributeHeaderItem.name
                 : DEFAULT_SEGMENT_ITEM;
@@ -77,18 +77,19 @@ export function getPushpinColors(
     segmentValues: string[] = [],
     colorStrategy: IColorStrategy,
 ): IPushpinColor[] {
-    const DEFAULT_COLOR = colorStrategy.getColorByIndex(0);
+    const defaultColor = colorStrategy.getColorByIndex(0);
+
     if (!colorValues.length && !segmentValues.length) {
         return [
             {
                 border: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
-                background: DEFAULT_COLOR,
+                background: defaultColor,
             },
         ];
     }
+
     const segmentNames: string[] = segmentValues.map((value: string): string => value || EMPTY_SEGMENT_ITEM);
     const colorPaletteMapping: IObjectMapping = getColorPaletteMapping(colorStrategy);
-
     if (!colorValues.length) {
         return segmentNames.map(
             (name: string): IPushpinColor => {
@@ -102,13 +103,13 @@ export function getPushpinColors(
     }
 
     const colorsWithoutNull = colorValues.filter(isFinite);
-
     const { min, max } = getMinMax(colorsWithoutNull);
+
     if (min === max && !segmentValues.length) {
         return [
             {
                 border: DEFAULT_PUSHPIN_BORDER_COLOR_VALUE,
-                background: DEFAULT_COLOR,
+                background: defaultColor,
             },
         ];
     }
@@ -119,6 +120,7 @@ export function getPushpinColors(
             const colorIndex = getColorIndexInPalette(value, min, max);
             const segmentItemName = segmentNames[index] || DEFAULT_SEGMENT_ITEM;
             const palette = colorPaletteMapping[segmentItemName];
+
             return {
                 border: palette[DEFAULT_COLOR_INDEX_IN_PALETTE],
                 background: palette[colorIndex],

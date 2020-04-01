@@ -220,4 +220,5 @@ export const GEOPUSHPIN_SUPPORTED_PROPERTIES = [
     "points.minSize",
     "points.maxSize",
     "viewport.area",
+    "colorMapping",
 ];

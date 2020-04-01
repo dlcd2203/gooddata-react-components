@@ -3,9 +3,38 @@ import mapboxgl from "mapbox-gl";
 import { createPushpinDataSource } from "../geoChartDataSource";
 import { IGeoData } from "../../../../interfaces/GeoChart";
 import { LOCATION_LNGLATS, SIZE_NUMBERS, COLOR_NUMBERS } from "../../../../../stories/data/geoChart";
+import GeoChartColorStrategy from "../../../visualizations/chart/colorStrategies/geoChart";
+import { DEFAULT_COLORS, DEFAULT_COLOR_PALETTE } from "../../../visualizations/utils/color";
 
 describe("createPushpinDataSource", () => {
+    const mockColorStrategy = new GeoChartColorStrategy(DEFAULT_COLOR_PALETTE, null, null, null, null, null);
+    const mockGetColorByIndex = jest.spyOn(mockColorStrategy, "getColorByIndex");
+    const mockGetColorAssignment = jest.spyOn(mockColorStrategy, "getColorAssignment");
+    mockGetColorByIndex.mockImplementation(index => DEFAULT_COLORS[index]);
+    mockGetColorAssignment.mockImplementation(() => [
+        {
+            headerItem: {
+                attributeHeader: {
+                    uri: "location",
+                    identifier: "location",
+                    localIdentifier: "location",
+                    name: "location",
+                    formOf: {
+                        uri: "location",
+                        identifier: "location",
+                        name: "location",
+                    },
+                },
+            },
+            color: {
+                type: "guid",
+                value: "1",
+            },
+        },
+    ]);
+
     it("should return empty data source", () => {
+        // mockGetColorAssignment.mockImplementation(() => []);
         const geoData: IGeoData = {
             location: {
                 name: "name",
@@ -13,7 +42,7 @@ describe("createPushpinDataSource", () => {
                 data: [],
             },
         };
-        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData);
+        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData, mockColorStrategy);
 
         expect(source.data).toEqual({
             type: "FeatureCollection",
@@ -41,7 +70,7 @@ describe("createPushpinDataSource", () => {
                 data: LOCATION_LNGLATS,
             },
         };
-        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData);
+        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData, mockColorStrategy);
 
         const data = source.data as GeoJSON.FeatureCollection<GeoJSON.Geometry>;
         expect(data.features[0]).toEqual({
@@ -99,7 +128,7 @@ describe("createPushpinDataSource", () => {
                 ],
             },
         };
-        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData);
+        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData, mockColorStrategy);
 
         expect(source.data).toEqual({
             features: [
@@ -107,7 +136,13 @@ describe("createPushpinDataSource", () => {
                     geometry: { coordinates: [-155.6254, 19.0415], type: "Point" },
                     properties: {
                         pushpinSize: 8,
-                        color: { format: "", title: "", value: undefined },
+                        color: {
+                            format: "",
+                            title: "",
+                            value: undefined,
+                            background: "rgb(20,178,226)",
+                            border: "rgb(233,237,241)",
+                        },
                         locationName: { title: "", value: undefined },
                         segment: { title: "", value: undefined },
                         size: { format: "", title: "", value: undefined },
@@ -118,7 +153,13 @@ describe("createPushpinDataSource", () => {
                     geometry: { coordinates: [-155.5751, 19.0698], type: "Point" },
                     properties: {
                         pushpinSize: 8,
-                        color: { format: "", title: "", value: undefined },
+                        color: {
+                            format: "",
+                            title: "",
+                            value: undefined,
+                            background: "rgb(20,178,226)",
+                            border: "rgb(233,237,241)",
+                        },
                         locationName: { title: "", value: undefined },
                         segment: { title: "", value: undefined },
                         size: { format: "", title: "", value: undefined },
@@ -129,7 +170,13 @@ describe("createPushpinDataSource", () => {
                     geometry: { coordinates: [-155.6143, 19.0716], type: "Point" },
                     properties: {
                         pushpinSize: 8,
-                        color: { format: "", title: "", value: undefined },
+                        color: {
+                            format: "",
+                            title: "",
+                            value: undefined,
+                            background: "rgb(20,178,226)",
+                            border: "rgb(233,237,241)",
+                        },
                         locationName: { title: "", value: undefined },
                         segment: { title: "", value: undefined },
                         size: { format: "", title: "", value: undefined },
@@ -155,7 +202,7 @@ describe("createPushpinDataSource", () => {
                 data: [],
             },
         };
-        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData);
+        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData, mockColorStrategy);
 
         expect(source.cluster).toBe(undefined);
     });
@@ -168,7 +215,7 @@ describe("createPushpinDataSource", () => {
                 data: [],
             },
         };
-        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData);
+        const source: mapboxgl.GeoJSONSourceRaw = createPushpinDataSource(geoData, mockColorStrategy);
 
         expect(source.cluster).toBe(true);
         expect(source.clusterMaxZoom).toBe(14);

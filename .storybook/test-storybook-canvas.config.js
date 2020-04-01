@@ -22,6 +22,9 @@ const configuration = {
             'with disabled groupNearbyPoints': DEFAULT_SCENARIO_CONFIG,
             'with enabled groupNearbyPoints': DEFAULT_SCENARIO_CONFIG,
             'with config point size': DEFAULT_SCENARIO_CONFIG,
+            'with custom colors': DEFAULT_SCENARIO_CONFIG,
+            'with custom colors, color mapping for SegmentBy': DEFAULT_SCENARIO_CONFIG,
+            'with color mapping for Location': DEFAULT_SCENARIO_CONFIG,
         },
         'URI components': {
             'GeoPushpinChart example': DEFAULT_SCENARIO_CONFIG,

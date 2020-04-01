@@ -1,4 +1,4 @@
-// (C) 2019 GoodData Corporation
+// (C) 2019-2020 GoodData Corporation
 import produce from "immer";
 import get = require("lodash/get");
 import set = require("lodash/set");
@@ -100,8 +100,9 @@ export function getProperties(
         return newProperties;
     } else if (MappingHeader.isMappingHeaderAttributeItem(item)) {
         return mergeColorMappingToProperties(properties, item.attributeHeaderItem.uri, color);
+    } else if (MappingHeader.isMappingHeaderAttribute(item)) {
+        return mergeColorMappingToProperties(properties, item.attributeHeader.uri, color);
     }
-
     return {};
 }
 

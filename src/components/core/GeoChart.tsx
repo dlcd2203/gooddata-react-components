@@ -31,7 +31,7 @@ import { TOP, BOTTOM } from "../visualizations/chart/legend/PositionTypes";
 import { IColorAssignment, IColorPalette } from "../../interfaces/Config";
 import { isMappingHeaderAttributeItem } from "../../interfaces/MappingHeader";
 import { IColorStrategy } from "../visualizations/chart/colorFactory";
-import { getColorStrategy } from "../../helpers/geoChart/colorMapping";
+import { getColorStrategy } from "../../helpers/geoChart/colorStrategy";
 
 export function renderChart(props: IGeoChartRendererProps): React.ReactElement {
     return <GeoChartRenderer {...props} />;
@@ -143,9 +143,11 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
         if (!this.props.execution) {
             return false;
         }
+
         if (!prevProps.execution) {
             return true;
         }
+
         const {
             execution: { executionResponse: prevExecutionResponse },
         } = prevProps;
@@ -171,14 +173,14 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
     private getCategoryLegendItems(colorStrategy: IColorStrategy): IPushpinCategoryLegendItem[] {
         const colorAssignment: IColorAssignment[] = colorStrategy.getColorAssignment();
         return colorAssignment.map(
-            (item: IColorAssignment, index: number): IPushpinCategoryLegendItem => {
+            (item: IColorAssignment, legendIndex: number): IPushpinCategoryLegendItem => {
                 const name: string = isMappingHeaderAttributeItem(item.headerItem)
                     ? item.headerItem.attributeHeaderItem.name
                     : EMPTY_SEGMENT_ITEM;
-                const color: string = colorStrategy.getColorByIndex(index);
+                const color: string = colorStrategy.getColorByIndex(legendIndex);
                 return {
                     name,
-                    legendIndex: index,
+                    legendIndex,
                     color,
                     isVisible: true,
                 };
@@ -225,26 +227,26 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, IGeoCh
                 config,
                 position,
                 geoData: {},
-                colorStrategy: null,
+                colorLegendValue: "",
             };
         }
 
         const { geoData, colorStrategy } = geoChartOptions;
         const { segment } = geoData;
         const { enabledLegendItems } = this.state;
-
+        const colorLegendValue: string = colorStrategy.getColorByIndex(0);
         if (segment && enabledLegendItems.length) {
             return {
                 config,
                 position,
                 geoData,
-                colorStrategy,
+                colorLegendValue,
                 categoryItems: enabledLegendItems,
                 onItemClick: this.onLegendItemClick,
             };
         }
 
-        return { config, position, geoData, colorStrategy };
+        return { config, position, geoData, colorLegendValue };
     }
 
     private getChartProps(): IGeoChartRendererProps {

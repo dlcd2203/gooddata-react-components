@@ -16,6 +16,7 @@ import {
     getGeoConfig,
     getExecutionResult,
 } from "../../../../../stories/data/geoChart";
+import { DEFAULT_COLORS } from "../../../visualizations/utils/color";
 
 interface ILegendFlags {
     hasSizeLegend?: boolean;
@@ -57,6 +58,7 @@ function getLegendProps(legendFlags: ILegendFlags): IGeoChartLegendRendererProps
     };
     return {
         geoData,
+        colorLegendValue: DEFAULT_COLORS[0],
         config: getGeoConfig({ isWithLocation: true, isWithSize: hasSizeLegend }),
     };
 }
@@ -102,6 +104,7 @@ describe("GeoChartLegendRenderer", () => {
         const props: IGeoChartLegendRendererProps = {
             config,
             geoData,
+            colorLegendValue: DEFAULT_COLORS[0],
             categoryItems: [
                 {
                     name: "a",

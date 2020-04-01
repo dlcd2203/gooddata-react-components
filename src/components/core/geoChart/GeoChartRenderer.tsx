@@ -231,7 +231,7 @@ export default class GeoChartRenderer extends React.Component<IGeoChartRendererP
         const { chart, handleLayerLoaded, props } = this;
         const { config, geoData, colorStrategy } = props;
         const { points: { groupNearbyPoints = true } = {} } = config || {};
-
+        const defaultColor: string = colorStrategy.getColorByIndex(0);
         // hide city, town, village and hamlet labels
         if (chart.getLayer("settlement-label")) {
             chart.removeLayer("settlement-label");
@@ -241,14 +241,14 @@ export default class GeoChartRenderer extends React.Component<IGeoChartRendererP
 
         if (!isClusteringAllowed(geoData, groupNearbyPoints)) {
             chart.addLayer(
-                createPushpinDataLayer(DEFAULT_DATA_SOURCE_NAME, geoData, config),
+                createPushpinDataLayer(DEFAULT_DATA_SOURCE_NAME, geoData, config, defaultColor),
                 "state-label", // pushpin will be rendered under state/county label
             );
         } else {
             chart.addLayer(createClusterPoints(DEFAULT_DATA_SOURCE_NAME));
             chart.addLayer(createClusterLabels(DEFAULT_DATA_SOURCE_NAME));
             // un-clustered points will be rendered under state/county label
-            chart.addLayer(createUnclusterPoints(DEFAULT_DATA_SOURCE_NAME), "state-label");
+            chart.addLayer(createUnclusterPoints(DEFAULT_DATA_SOURCE_NAME, defaultColor), "state-label");
         }
 
         // keep listening to the data event until the style is loaded
@@ -295,7 +295,7 @@ export default class GeoChartRenderer extends React.Component<IGeoChartRendererP
         // https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/control/navigation_control.js#L118
         try {
             this.chart.remove();
-        } catch (_e) {
+        } catch {
             return;
         }
     };

@@ -15,6 +15,8 @@ import {
     ATTRIBUTE_TOOLTIP_GEOCHART,
     ATTRIBUTE_SEGMENT_GEOCHART_ALIAS,
     MEASURE_COLOR_GEOCHART_ALIAS,
+    MEASURE_COLOR_SAME_VALUES_GEOCHART,
+    MEASURE_SIZE_SAME_VALUES_GEOCHART,
 } from "../data/geoChartComponentProps";
 import { CUSTOM_COLOR_PALETTE_CONFIG } from "../data/configProps";
 import { attributeItemNameMatch, uriMatch, identifierMatch } from "../../src/factory/HeaderPredicateFactory";
@@ -123,8 +125,8 @@ storiesOf("Core components/GeoPushpinChart", module)
             renderGeoPushpinChart({
                 projectId: "storybook",
                 location: ATTRIBUTE_LOCATION_GEOCHART,
-                size: MEASURE_SIZE_GEOCHART,
-                color: MEASURE_COLOR_GEOCHART,
+                size: MEASURE_SIZE_SAME_VALUES_GEOCHART,
+                color: MEASURE_COLOR_SAME_VALUES_GEOCHART,
                 config,
             }),
         );
@@ -307,10 +309,10 @@ storiesOf("Core components/GeoPushpinChart", module)
                     ...DEFAULT_CONFIG,
                     colors: [
                         "rgb(162, 37, 34)",
-                        "rgb(195, 49, 73)",
+                        "rgb(194, 153, 121)",
                         "rgb(168, 194, 86)",
                         "rgb(243, 217, 177)",
-                        "rgb(194, 153, 121)",
+                        "rgb(195, 49, 73)",
                     ],
                 },
             }),
@@ -326,6 +328,7 @@ storiesOf("Core components/GeoPushpinChart", module)
                 segmentBy: ATTRIBUTE_SEGMENT_GEOCHART,
                 config: {
                     ...DEFAULT_CONFIG,
+                    tooltipText: ATTRIBUTE_TOOLTIP_GEOCHART,
                     ...CUSTOM_COLOR_PALETTE_CONFIG,
                     colorMapping: [
                         {
@@ -336,7 +339,7 @@ storiesOf("Core components/GeoPushpinChart", module)
                             },
                         },
                         {
-                            predicate: attributeItemNameMatch("Discount"),
+                            predicate: attributeItemNameMatch("Toy Store"),
                             color: {
                                 type: "rgb",
                                 value: { r: 168, g: 194, b: 86 },
@@ -359,7 +362,7 @@ storiesOf("Core components/GeoPushpinChart", module)
                             predicate: identifierMatch("30.df"),
                             color: {
                                 type: "guid",
-                                value: "05",
+                                value: "5",
                             },
                         },
                     ],
